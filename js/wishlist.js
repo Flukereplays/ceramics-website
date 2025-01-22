@@ -1,121 +1,111 @@
 export class Wishlist {
     constructor() {
         this.items = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        this.isPanelVisible = false;
         this.init();
     }
 
     init() {
-        // Create wishlist panel
         this.createWishlistPanel();
-        // Update wishlist count
         this.updateWishlistCount();
     }
 
     createWishlistPanel() {
-        const panel = document.createElement('div');
-        panel.className = 'wishlist-panel';
-        panel.innerHTML = `
-            <span class="panel-close" onclick="wishlist.togglePanel()">&times;</span>
-            <h2>My Wishlist</h2>
+        const wishlistPanel = document.createElement('div');
+        wishlistPanel.className = 'wishlist-panel';
+        wishlistPanel.innerHTML = `
+            <div class="panel-header">
+                <h3>Wishlist</h3>
+                <button class="close-panel" onclick="wishlist.togglePanel()">&times;</button>
+            </div>
             <div class="wishlist-items"></div>
         `;
-        document.body.appendChild(panel);
-    }
-
-    toggleWishlist(productId) {
-        const index = this.items.indexOf(productId);
-        const btn = document.querySelector(`.product[data-id="${productId}"] .wishlist-btn i`);
-        
-        if (index === -1) {
-            // Add to wishlist
-            this.items.push(productId);
-            if (btn) {
-                btn.classList.remove('far');
-                btn.classList.add('fas');
-            }
-            this.showMessage('Added to wishlist!');
-        } else {
-            // Remove from wishlist
-            this.items.splice(index, 1);
-            if (btn) {
-                btn.classList.remove('fas');
-                btn.classList.add('far');
-            }
-            this.showMessage('Removed from wishlist!');
-        }
-        
-        localStorage.setItem('wishlist', JSON.stringify(this.items));
-        this.updateWishlistCount();
-        this.updateWishlistPanel();
+        document.body.appendChild(wishlistPanel);
+        this.updateWishlistDisplay();
     }
 
     togglePanel() {
         const panel = document.querySelector('.wishlist-panel');
-        panel.classList.toggle('active');
-        if (panel.classList.contains('active')) {
-            this.updateWishlistPanel();
+        this.isPanelVisible = !this.isPanelVisible;
+        panel.classList.toggle('active', this.isPanelVisible);
+    }
+
+    toggleItem(productId) {
+        const index = this.items.indexOf(productId);
+        if (index === -1) {
+            this.items.push(productId);
+            this.showNotification('Item added to wishlist');
+        } else {
+            this.items.splice(index, 1);
+            this.showNotification('Item removed from wishlist');
+        }
+        this.saveWishlist();
+        this.updateWishlistDisplay();
+        
+        // Update product card heart icon
+        const heartIcon = document.querySelector(`[data-product-id="${productId}"] .wishlist-btn i`);
+        if (heartIcon) {
+            heartIcon.className = this.items.includes(productId) ? 'fas fa-heart' : 'far fa-heart';
         }
     }
 
-    updateWishlistPanel() {
-        const container = document.querySelector('.wishlist-items');
+    getProductDetails(productId) {
         const products = JSON.parse(localStorage.getItem('products') || '[]');
-        const selectedCurrency = localStorage.getItem('selectedCurrency') || 'PLN';
-        
-        if (this.items.length === 0) {
-            container.innerHTML = '<p class="empty-wishlist">Your wishlist is empty</p>';
-            return;
-        }
+        return products.find(p => p.id === productId);
+    }
 
-        container.innerHTML = this.items.map(id => {
-            const product = products.find(p => p.id === id);
-            if (!product) return '';
-            
-            return `
-                <div class="wishlist-item">
-                    <img src="${product.image}" alt="${product.name}">
-                    <div class="wishlist-item-details">
-                        <h3>${product.name}</h3>
-                        <p class="price">
-                            ${selectedCurrency === 'EUR' 
-                                ? `€${product.priceEUR.toFixed(2)}`
-                                : `${product.pricePLN.toFixed(2)} zł`
-                            }
-                        </p>
-                    </div>
-                    <div class="wishlist-item-actions">
-                        <button onclick="cart.addItem('${product.id}')">
-                            <i class="fas fa-shopping-cart"></i>
-                        </button>
-                        <button onclick="wishlist.toggleWishlist('${product.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
+    saveWishlist() {
+        localStorage.setItem('wishlist', JSON.stringify(this.items));
+        this.updateWishlistCount();
     }
 
     updateWishlistCount() {
-        const count = document.querySelector('.wishlist-count');
-        if (count) {
-            count.textContent = this.items.length;
+        const countElement = document.querySelector('.wishlist-count');
+        if (countElement) {
+            countElement.textContent = this.items.length;
+            countElement.style.display = this.items.length > 0 ? 'block' : 'none';
         }
     }
 
-    showMessage(message) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'toast-message';
-        messageDiv.textContent = message;
-        document.body.appendChild(messageDiv);
-        
+    updateWishlistDisplay() {
+        const wishlistItems = document.querySelector('.wishlist-items');
+        if (!wishlistItems) return;
+
+        const selectedCurrency = localStorage.getItem('selectedCurrency') || 'PLN';
+        const currencySymbol = selectedCurrency === 'EUR' ? '€' : 'zł';
+        const priceKey = selectedCurrency === 'EUR' ? 'priceEUR' : 'pricePLN';
+
+        const products = this.items.map(id => this.getProductDetails(id)).filter(Boolean);
+
+        wishlistItems.innerHTML = products.map(product => `
+            <div class="wishlist-item">
+                <img src="${product.image}" alt="${product.name}">
+                <div class="item-details">
+                    <h4>${product.name}</h4>
+                    <div class="item-price">${currencySymbol}${product[priceKey].toFixed(2)}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="add-to-cart" onclick="cart.addItem('${product.id}')">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                    <button class="remove-item" onclick="wishlist.toggleItem('${product.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
         setTimeout(() => {
-            messageDiv.classList.add('show');
-            setTimeout(() => {
-                messageDiv.classList.remove('show');
-                setTimeout(() => messageDiv.remove(), 300);
-            }, 2000);
-        }, 100);
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
     }
 }
 

@@ -5,12 +5,14 @@ import { Navigation } from './navigation.js';
 import { formatCurrency, handleImageLoad } from './utils.js';
 import admin from './admin.js';
 import config from './config.js';
+import { Wishlist } from './wishlist.js';
 
 // Global variables
 const cart = new Cart();
 const auth = new Auth();
 const navigation = new Navigation();
 const DEBUG = true;
+const wishlist = new Wishlist();
 
 // Debug logging
 function debug(...args) {
@@ -74,6 +76,12 @@ async function initializeApp() {
         // Initialize gallery
         initializeGallery();
 
+        // Update admin access
+        updateAdminAccess();
+
+        // Add cart and wishlist icons
+        addShoppingIcons();
+
     } catch (error) {
         console.error('Error during initialization:', error);
         const splashScreen = document.querySelector('.splash-screen');
@@ -112,7 +120,7 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 window.navigation = navigation;
 window.cart = cart;
 window.auth = auth;
-window.admin = admin;
+window.wishlist = wishlist;
 window.toggleDarkMode = toggleDarkMode;
 
 // Export additional functions needed by the HTML
@@ -295,6 +303,33 @@ function displayProducts(products) {
             <p class="price">$${product.price.toFixed(2)}</p>
         </div>
     `).join('');
+}
+
+// Check admin access and show/hide admin link
+function updateAdminAccess() {
+    const adminLink = document.querySelector('.admin-link');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    if (adminLink) {
+        adminLink.style.display = currentUser.isAdmin ? 'inline-block' : 'none';
+    }
+}
+
+function addShoppingIcons() {
+    const header = document.querySelector('.header-title');
+    const iconContainer = document.createElement('div');
+    iconContainer.className = 'header-icons';
+    iconContainer.innerHTML = `
+        <div class="wishlist-icon" onclick="wishlist.togglePanel()">
+            <i class="far fa-heart"></i>
+            <span class="wishlist-count">0</span>
+        </div>
+        <div class="cart-icon" onclick="cart.togglePanel()">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+        </div>
+    `;
+    header.appendChild(iconContainer);
 }
 
 // Initialize

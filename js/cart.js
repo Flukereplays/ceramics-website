@@ -2,119 +2,139 @@ import { formatCurrency } from './utils.js';
 
 export class Cart {
     constructor() {
-        this.items = [];
-        this.total = 0;
+        this.items = JSON.parse(localStorage.getItem('cart') || '[]');
+        this.isPanelVisible = false;
+        this.init();
     }
 
-    addItem(product) {
-        if (!product.id) {
-            product.id = Date.now().toString();
-        }
+    init() {
+        this.createCartPanel();
+        this.updateCartCount();
+    }
 
-        const existingItem = this.items.find(item => item.id === product.id);
+    createCartPanel() {
+        const cartPanel = document.createElement('div');
+        cartPanel.className = 'cart-panel';
+        cartPanel.innerHTML = `
+            <div class="panel-header">
+                <h3>Shopping Cart</h3>
+                <button class="close-panel" onclick="cart.togglePanel()">&times;</button>
+            </div>
+            <div class="cart-items"></div>
+            <div class="cart-total">
+                <span>Total:</span>
+                <span class="total-amount">$0.00</span>
+            </div>
+            <button class="checkout-btn" onclick="cart.checkout()">Checkout</button>
+        `;
+        document.body.appendChild(cartPanel);
+        this.updateCartDisplay();
+    }
+
+    togglePanel() {
+        const panel = document.querySelector('.cart-panel');
+        this.isPanelVisible = !this.isPanelVisible;
+        panel.classList.toggle('active', this.isPanelVisible);
+    }
+
+    addItem(productId) {
+        const product = this.getProductDetails(productId);
+        if (!product) return;
+
+        const existingItem = this.items.find(item => item.id === productId);
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
             this.items.push({ ...product, quantity: 1 });
         }
 
-        this.updateDisplay();
         this.saveCart();
-        this.showToast(`${product.name} added to cart!`);
+        this.updateCartDisplay();
+        this.showNotification('Item added to cart');
     }
 
-    updateQuantity(productId, change) {
+    removeItem(productId) {
+        this.items = this.items.filter(item => item.id !== productId);
+        this.saveCart();
+        this.updateCartDisplay();
+    }
+
+    updateQuantity(productId, quantity) {
         const item = this.items.find(item => item.id === productId);
         if (item) {
-            item.quantity += change;
-            if (item.quantity <= 0) {
-                this.items = this.items.filter(i => i.id !== productId);
-            }
-            this.updateDisplay();
+            item.quantity = Math.max(1, quantity);
             this.saveCart();
+            this.updateCartDisplay();
         }
     }
 
-    updateDisplay() {
+    getProductDetails(productId) {
+        const products = JSON.parse(localStorage.getItem('products') || '[]');
+        return products.find(p => p.id === productId);
+    }
+
+    saveCart() {
+        localStorage.setItem('cart', JSON.stringify(this.items));
+        this.updateCartCount();
+    }
+
+    updateCartCount() {
+        const count = this.items.reduce((total, item) => total + item.quantity, 0);
+        const countElement = document.querySelector('.cart-count');
+        if (countElement) {
+            countElement.textContent = count;
+            countElement.style.display = count > 0 ? 'block' : 'none';
+        }
+    }
+
+    updateCartDisplay() {
         const cartItems = document.querySelector('.cart-items');
-        const cartCount = document.querySelector('.cart-count');
-        
-        cartCount.textContent = this.items.reduce((total, item) => total + item.quantity, 0);
+        const totalElement = document.querySelector('.total-amount');
+        if (!cartItems || !totalElement) return;
+
+        const selectedCurrency = localStorage.getItem('selectedCurrency') || 'PLN';
+        const currencySymbol = selectedCurrency === 'EUR' ? '€' : 'zł';
+        const priceKey = selectedCurrency === 'EUR' ? 'priceEUR' : 'pricePLN';
 
         cartItems.innerHTML = this.items.map(item => `
             <div class="cart-item">
                 <img src="${item.image}" alt="${item.name}">
-                <div class="cart-item-details">
-                    <h3>${item.name}</h3>
-                    <p>${formatCurrency(item.price)}</p>
-                    <div class="cart-item-quantity">
-                        <button class="quantity-btn" onclick="cart.updateQuantity('${item.id}', -1)">-</button>
+                <div class="item-details">
+                    <h4>${item.name}</h4>
+                    <div class="item-price">${currencySymbol}${item[priceKey].toFixed(2)}</div>
+                    <div class="quantity-controls">
+                        <button onclick="cart.updateQuantity('${item.id}', ${item.quantity - 1})">-</button>
                         <span>${item.quantity}</span>
-                        <button class="quantity-btn" onclick="cart.updateQuantity('${item.id}', 1)">+</button>
+                        <button onclick="cart.updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
                     </div>
                 </div>
+                <button class="remove-item" onclick="cart.removeItem('${item.id}')">&times;</button>
             </div>
         `).join('');
 
-        this.total = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        document.getElementById('cart-total-amount').textContent = formatCurrency(this.total);
-    }
-
-    saveCart() {
-        const user = JSON.parse(localStorage.getItem('currentUser'));
-        if (user) {
-            localStorage.setItem(`cart_${user.email}`, JSON.stringify(this.items));
-        }
-    }
-
-    loadCart() {
-        const user = JSON.parse(localStorage.getItem('currentUser'));
-        if (user) {
-            this.items = JSON.parse(localStorage.getItem(`cart_${user.email}`) || '[]');
-            this.updateDisplay();
-        }
-    }
-
-    showToast(message, type = 'success') {
-        const toastContainer = document.querySelector('.toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <span class="${type}-icon">${type === 'success' ? '✓' : '⚠'}</span>
-            <span>${message}</span>
-        `;
-        toastContainer.appendChild(toast);
-
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
+        const total = this.items.reduce((sum, item) => sum + (item[priceKey] * item.quantity), 0);
+        totalElement.textContent = `${currencySymbol}${total.toFixed(2)}`;
     }
 
     checkout() {
         if (this.items.length === 0) {
-            this.showToast('Your cart is empty', 'error');
+            this.showNotification('Your cart is empty');
             return;
         }
 
-        const order = {
-            date: new Date(),
-            items: [...this.items],
-            total: this.total,
-            status: 'Processing'
-        };
+        // Here you would typically integrate with a payment processor
+        alert('Checkout functionality will be implemented soon!');
+    }
 
-        const user = JSON.parse(localStorage.getItem('currentUser'));
-        if (user) {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const userIndex = users.findIndex(u => u.email === user.email);
-            if (!users[userIndex].orders) users[userIndex].orders = [];
-            users[userIndex].orders.push(order);
-            localStorage.setItem('users', JSON.stringify(users));
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
 
-            this.items = [];
-            this.saveCart();
-            this.updateDisplay();
-            this.showToast('Order placed successfully!');
-        }
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
     }
 } 
