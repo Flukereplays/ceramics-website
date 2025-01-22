@@ -20,6 +20,7 @@ export class Admin {
             this.createAdminPanel();
             this.attachEventListeners();
         }
+        this.setupEventListeners();
     }
 
     checkAuthStatus() {
@@ -280,34 +281,90 @@ export class Admin {
         eurInput.value = (parseFloat(plnValue) / exchangeRate).toFixed(2);
     }
 
-    handleProductSubmit(event) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const productData = {
-            id: this.currentEditingProduct?.id || crypto.randomUUID(),
-            name: formData.get('name'),
-            priceEUR: parseFloat(formData.get('priceEUR')),
-            pricePLN: parseFloat(formData.get('pricePLN')),
-            category: formData.get('category'),
-            material: formData.get('material'),
-            color: formData.get('color'),
-            image: formData.get('image'),
-            description: formData.get('description')
-        };
-
-        if (this.currentEditingProduct) {
-            const index = this.products.findIndex(p => p.id === this.currentEditingProduct.id);
-            if (index !== -1) {
-                this.products[index] = productData;
-            }
-        } else {
-            this.products.push(productData);
+    setupEventListeners() {
+        const productForm = document.getElementById('product-form');
+        if (productForm) {
+            productForm.addEventListener('submit', async (e) => await this.handleProductSubmit(e));
         }
+    }
 
-        this.saveProducts();
-        this.showSuccessMessage(this.currentEditingProduct ? 'Product updated successfully!' : 'Product added successfully!');
-        this.currentEditingProduct = null;
-        this.showProductsSection();
+    async handleProductSubmit(event) {
+        event.preventDefault();
+        
+        try {
+            const formData = new FormData(event.target);
+            const imageFile = formData.get('product-image');
+            
+            // First, upload the image
+            const imageUrl = await this.uploadImage(imageFile);
+            
+            // Create product data
+            const productData = {
+                name: formData.get('product-name'),
+                description: formData.get('product-description'),
+                price: parseFloat(formData.get('product-price')),
+                category: formData.get('product-category'),
+                imageUrl: imageUrl,
+                inStock: true
+            };
+
+            // Send product data to API
+            const response = await fetch(`${config.API_URL}/api/products`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(productData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add product');
+            }
+
+            this.showNotification('Product added successfully!');
+            event.target.reset();
+            
+            // Refresh products display
+            window.fetchProducts();
+            
+        } catch (error) {
+            console.error('Error adding product:', error);
+            this.showNotification('Error adding product. Please try again.', 'error');
+        }
+    }
+
+    async uploadImage(file) {
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch(`${config.API_URL}/api/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
+            }
+
+            const data = await response.json();
+            return data.imageUrl;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw new Error('Failed to upload image');
+        }
+    }
+
+    showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
     }
 
     handleReviewSubmit(event) {

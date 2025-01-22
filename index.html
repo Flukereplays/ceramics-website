@@ -162,17 +162,17 @@
                 <div class="admin-section">
                     <h3>Product Management</h3>
                     <form id="product-form" class="admin-form">
-                        <input type="text" id="product-name" placeholder="Product Name" required>
-                        <textarea id="product-description" placeholder="Product Description" required></textarea>
-                        <input type="number" id="product-price" placeholder="Price" step="0.01" required>
-                        <select id="product-category" required>
+                        <input type="text" id="product-name" name="product-name" placeholder="Product Name" required>
+                        <textarea id="product-description" name="product-description" placeholder="Product Description" required></textarea>
+                        <input type="number" id="product-price" name="product-price" placeholder="Price" step="0.01" required>
+                        <select id="product-category" name="product-category" required>
                             <option value="">Select Category</option>
                             <option value="vase">Vase</option>
                             <option value="plate">Plate</option>
                             <option value="mug">Mug</option>
                             <option value="bowl">Bowl</option>
                         </select>
-                        <input type="file" id="product-image" accept="image/*" required>
+                        <input type="file" id="product-image" name="product-image" accept="image/*" required>
                         <button type="submit">Add Product</button>
                     </form>
                 </div>
