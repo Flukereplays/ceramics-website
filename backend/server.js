@@ -8,9 +8,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-netlify-app.netlify.app', 'http://localhost:3000'] 
-    : 'http://localhost:3000'
+  origin: '*'  // During development, accept all origins
 }));
 app.use(express.json());
 
@@ -23,7 +21,11 @@ mongoose.connect(process.env.MONGODB_URI)
 const productRoutes = require('./routes/products');
 app.use('/api/products', productRoutes);
 
-// Routes (will be added later)
+// Test route
+app.get('/', (req, res) => {
+    res.json({ message: 'Welcome to Ceramics Website API' });
+});
+
 app.get('/api/test', (req, res) => {
     res.json({ message: 'Backend server is running!' });
 });
