@@ -44,6 +44,7 @@
                 <a href="#" data-page="gallery">Gallery</a>
                 <a href="#" data-page="catalogue">Catalogue</a>
                 <a href="#" data-page="contact">Contact</a>
+                <a href="#" data-page="admin" class="admin-link">Admin</a>
             </nav>
         </header>
 
@@ -145,6 +146,71 @@
                         <i class="fab fa-pinterest"></i>
                         <span>Pinterest</span>
                     </a>
+                </div>
+            </section>
+
+            <!-- Admin Section -->
+            <section id="admin" class="content-section">
+                <h2>Admin Dashboard</h2>
+                
+                <!-- Product Management -->
+                <div class="admin-section">
+                    <h3>Product Management</h3>
+                    <form id="product-form" class="admin-form">
+                        <input type="text" id="product-name" placeholder="Product Name" required>
+                        <textarea id="product-description" placeholder="Product Description" required></textarea>
+                        <input type="number" id="product-price" placeholder="Price" step="0.01" required>
+                        <select id="product-category" required>
+                            <option value="">Select Category</option>
+                            <option value="vase">Vase</option>
+                            <option value="plate">Plate</option>
+                            <option value="mug">Mug</option>
+                            <option value="bowl">Bowl</option>
+                        </select>
+                        <input type="file" id="product-image" accept="image/*" required>
+                        <button type="submit">Add Product</button>
+                    </form>
+                </div>
+
+                <!-- Review Management -->
+                <div class="admin-section">
+                    <h3>Review Management</h3>
+                    <form id="review-form" class="admin-form">
+                        <input type="text" id="review-author" placeholder="Author Name" required>
+                        <textarea id="review-text" placeholder="Review Text" required></textarea>
+                        <button type="submit">Add Review</button>
+                    </form>
+                    <div id="reviews-list" class="admin-list">
+                        <!-- Reviews will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Profit Calculator -->
+                <div class="admin-section">
+                    <h3>Profit Calculator</h3>
+                    <form id="profit-calculator" class="admin-form">
+                        <div class="calculator-section">
+                            <h4>Materials Cost</h4>
+                            <input type="number" id="clay-cost" placeholder="Clay Cost per kg" step="0.01">
+                            <input type="number" id="glaze-cost" placeholder="Glaze Cost per liter" step="0.01">
+                            <input type="number" id="packaging-cost" placeholder="Packaging Cost per unit" step="0.01">
+                        </div>
+                        <div class="calculator-section">
+                            <h4>Operating Costs</h4>
+                            <input type="number" id="electricity-cost" placeholder="Electricity Cost per firing" step="0.01">
+                            <input type="number" id="labor-cost" placeholder="Labor Cost per hour" step="0.01">
+                            <input type="number" id="labor-hours" placeholder="Hours per piece" step="0.5">
+                        </div>
+                        <div class="calculator-section">
+                            <h4>Selling Details</h4>
+                            <input type="number" id="selling-price" placeholder="Selling Price" step="0.01">
+                            <input type="number" id="monthly-units" placeholder="Expected Monthly Units" step="1">
+                        </div>
+                        <button type="button" onclick="calculateProfit()">Calculate Profit</button>
+                    </form>
+                    <div id="profit-results" class="calculator-results">
+                        <!-- Profit calculation results will be shown here -->
+                    </div>
                 </div>
             </section>
         </main>

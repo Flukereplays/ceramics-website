@@ -1,3 +1,5 @@
+import config from './config.js';
+
 export class Admin {
     constructor() {
         this.products = [];
@@ -462,6 +464,80 @@ export class Admin {
             setTimeout(() => messageDiv.remove(), 300);
         }, 3000);
     }
+
+    async loadReviews() {
+        try {
+            const response = await fetch(`${config.API_URL}/api/reviews`);
+            if (!response.ok) throw new Error('Failed to fetch reviews');
+
+            const reviews = await response.json();
+            this.displayReviews(reviews);
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+        }
+    }
+
+    displayReviews(reviews) {
+        const reviewsList = document.getElementById('reviews-list');
+        if (!reviewsList) return;
+
+        reviewsList.innerHTML = reviews.map(review => `
+            <div class="admin-list-item">
+                <div>
+                    <strong>${review.author}</strong>
+                    <p>${review.text}</p>
+                </div>
+                <button onclick="admin.deleteReview('${review._id}')">Delete</button>
+            </div>
+        `).join('');
+    }
+
+    async deleteReview(reviewId) {
+        try {
+            const response = await fetch(`${config.API_URL}/api/reviews/${reviewId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Failed to delete review');
+
+            alert('Review deleted successfully!');
+            this.loadReviews();
+        } catch (error) {
+            console.error('Error deleting review:', error);
+            alert('Failed to delete review. Please try again.');
+        }
+    }
+
+    calculateProfit() {
+        // Get input values
+        const clayCost = parseFloat(document.getElementById('clay-cost').value) || 0;
+        const glazeCost = parseFloat(document.getElementById('glaze-cost').value) || 0;
+        const packagingCost = parseFloat(document.getElementById('packaging-cost').value) || 0;
+        const electricityCost = parseFloat(document.getElementById('electricity-cost').value) || 0;
+        const laborCost = parseFloat(document.getElementById('labor-cost').value) || 0;
+        const laborHours = parseFloat(document.getElementById('labor-hours').value) || 0;
+        const sellingPrice = parseFloat(document.getElementById('selling-price').value) || 0;
+        const monthlyUnits = parseInt(document.getElementById('monthly-units').value) || 0;
+
+        // Calculate costs
+        const materialCostPerUnit = clayCost + glazeCost + packagingCost;
+        const laborCostPerUnit = laborCost * laborHours;
+        const totalCostPerUnit = materialCostPerUnit + laborCostPerUnit + (electricityCost / monthlyUnits);
+        const profitPerUnit = sellingPrice - totalCostPerUnit;
+        const monthlyProfit = profitPerUnit * monthlyUnits;
+        const profitMargin = (profitPerUnit / sellingPrice) * 100;
+
+        // Display results
+        const resultsDiv = document.getElementById('profit-results');
+        resultsDiv.innerHTML = `
+            <h4>Profit Analysis</h4>
+            <p>Cost per unit: $${totalCostPerUnit.toFixed(2)}</p>
+            <p>Profit per unit: $${profitPerUnit.toFixed(2)}</p>
+            <p>Monthly profit: $${monthlyProfit.toFixed(2)}</p>
+            <p>Profit margin: ${profitMargin.toFixed(1)}%</p>
+        `;
+        resultsDiv.classList.add('visible');
+    }
 }
 
 // Initialize admin functionality and export instance
@@ -469,4 +545,5 @@ const admin = new Admin();
 export default admin;
 
 // Also expose to window for HTML event handlers
-window.admin = admin; 
+window.admin = admin;
+window.calculateProfit = () => admin.calculateProfit(); 
