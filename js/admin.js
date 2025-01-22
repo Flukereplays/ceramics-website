@@ -288,6 +288,29 @@ export class Admin {
         }
     }
 
+    async uploadImage(file) {
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch(`${config.API_URL}/api/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to upload image');
+            }
+
+            const data = await response.json();
+            return data.imageUrl;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw new Error('Failed to upload image: ' + error.message);
+        }
+    }
+
     async handleProductSubmit(event) {
         event.preventDefault();
         
@@ -329,29 +352,7 @@ export class Admin {
             
         } catch (error) {
             console.error('Error adding product:', error);
-            this.showNotification('Error adding product. Please try again.', 'error');
-        }
-    }
-
-    async uploadImage(file) {
-        try {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            const response = await fetch(`${config.API_URL}/api/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to upload image');
-            }
-
-            const data = await response.json();
-            return data.imageUrl;
-        } catch (error) {
-            console.error('Error uploading image:', error);
-            throw new Error('Failed to upload image');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 

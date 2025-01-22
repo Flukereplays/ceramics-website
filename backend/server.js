@@ -29,7 +29,10 @@ app.use((err, req, res, next) => {
 
 // Routes
 const productRoutes = require('./routes/products');
+const uploadRoutes = require('./routes/upload');
+
 app.use('/api/products', productRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Test route
 app.get('/', (req, res) => {
