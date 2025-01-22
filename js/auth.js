@@ -10,11 +10,11 @@ export class Auth {
     }
 
     login(email, password) {
-        // For demo purposes, let's create a test admin user
-        if (email === 'admin@example.com' && password === 'admin123') {
+        // Admin credentials
+        if (email === 'from.fire.ceramics@gmail.com' && password === 'from.fire') {
             this.user = {
                 email: email,
-                name: 'Admin User',
+                name: 'From Fire Ceramics',
                 isAdmin: true
             };
             localStorage.setItem('currentUser', JSON.stringify(this.user));
