@@ -4,6 +4,7 @@ import { Auth } from './auth.js';
 import { Navigation } from './navigation.js';
 import { formatCurrency, handleImageLoad } from './utils.js';
 import admin from './admin.js';
+import config from './config.js';
 
 // Global variables
 const cart = new Cart();
@@ -136,4 +137,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currencySelector) {
         currencySelector.value = selectedCurrency;
     }
+});
+
+// Function to fetch products from the API
+async function fetchProducts() {
+    try {
+        const response = await fetch(`${config.API_URL}/api/products`);
+        const data = await response.json();
+        displayProducts(data);
+    } catch (error) {
+        console.error('Error fetching products:', error);
+    }
+}
+
+// Function to display products on the page
+function displayProducts(products) {
+    const productsContainer = document.getElementById('products');
+    if (!productsContainer) return;
+
+    productsContainer.innerHTML = products.map(product => `
+        <div class="product-card">
+            <img src="${product.imageUrl}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <p class="price">$${product.price}</p>
+            <button onclick="addToCart('${product._id}')">Add to Cart</button>
+        </div>
+    `).join('');
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', () => {
+    fetchProducts();
 }); 
