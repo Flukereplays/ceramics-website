@@ -142,25 +142,43 @@ document.addEventListener('DOMContentLoaded', () => {
 // Function to fetch products from the API
 async function fetchProducts() {
     try {
+        console.log('Fetching products...');
         const response = await fetch(`${config.API_URL}/api/products`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
+        console.log('Products fetched:', data);
         displayProducts(data);
     } catch (error) {
         console.error('Error fetching products:', error);
+        const productsContainer = document.getElementById('products');
+        if (productsContainer) {
+            productsContainer.innerHTML = `<p class="error-message">Error loading products. Please try again later.</p>`;
+        }
     }
 }
 
 // Function to display products on the page
 function displayProducts(products) {
+    console.log('Displaying products:', products);
     const productsContainer = document.getElementById('products');
-    if (!productsContainer) return;
+    if (!productsContainer) {
+        console.error('Products container not found!');
+        return;
+    }
+
+    if (!Array.isArray(products) || products.length === 0) {
+        productsContainer.innerHTML = '<p>No products available.</p>';
+        return;
+    }
 
     productsContainer.innerHTML = products.map(product => `
         <div class="product-card">
-            <img src="${product.imageUrl}" alt="${product.name}">
+            <img src="${product.imageUrl}" alt="${product.name}" onerror="this.src='images/placeholder.png'">
             <h3>${product.name}</h3>
             <p>${product.description}</p>
-            <p class="price">$${product.price}</p>
+            <p class="price">$${product.price.toFixed(2)}</p>
             <button onclick="addToCart('${product._id}')">Add to Cart</button>
         </div>
     `).join('');
@@ -168,5 +186,6 @@ function displayProducts(products) {
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, fetching products...');
     fetchProducts();
 }); 
