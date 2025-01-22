@@ -1,104 +1,97 @@
 export class Auth {
     constructor() {
-        this.user = null;
+        this.user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        this.init();
+    }
+
+    init() {
+        this.updateAdminAccess();
+        this.updateLoginButton();
     }
 
     login(email, password) {
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const foundUser = users.find(u => u.email === email && u.password === password);
-        
-        if (foundUser) {
-            this.user = foundUser;
+        // For demo purposes, let's create a test admin user
+        if (email === 'admin@example.com' && password === 'admin123') {
+            this.user = {
+                email: email,
+                name: 'Admin User',
+                isAdmin: true
+            };
             localStorage.setItem('currentUser', JSON.stringify(this.user));
-            this.showAccountMenu();
+            this.updateAdminAccess();
+            this.updateLoginButton();
+            this.hideLoginModal();
+            this.showNotification('Logged in successfully!');
             return true;
         }
+        this.showNotification('Invalid credentials', 'error');
         return false;
-    }
-
-    register(name, email, password) {
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        if (users.some(u => u.email === email)) {
-            return false;
-        }
-
-        const newUser = { name, email, password, orders: [] };
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        
-        this.user = newUser;
-        localStorage.setItem('currentUser', JSON.stringify(this.user));
-        this.showAccountMenu();
-        return true;
     }
 
     logout() {
         this.user = null;
         localStorage.removeItem('currentUser');
-        this.showLoginForm();
+        this.updateAdminAccess();
+        this.updateLoginButton();
+        this.showNotification('Logged out successfully!');
     }
 
-    showLoginForm() {
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const accountMenu = document.getElementById('account-menu');
-
-        registerForm.style.display = 'none';
-        accountMenu.style.display = 'none';
-        loginForm.style.display = 'block';
-
-        setTimeout(() => {
-            loginForm.classList.add('active');
-            registerForm.classList.remove('active');
-            accountMenu.classList.remove('active');
-        }, 50);
-    }
-
-    showRegisterForm() {
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const accountMenu = document.getElementById('account-menu');
-
-        loginForm.style.display = 'none';
-        accountMenu.style.display = 'none';
-        registerForm.style.display = 'block';
-
-        setTimeout(() => {
-            registerForm.classList.add('active');
-            loginForm.classList.remove('active');
-            accountMenu.classList.remove('active');
-        }, 50);
-    }
-
-    showAccountMenu() {
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const accountMenu = document.getElementById('account-menu');
-
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'none';
-        accountMenu.style.display = 'block';
-        document.getElementById('user-name').textContent = this.user.name;
-
-        setTimeout(() => {
-            accountMenu.classList.add('active');
-            loginForm.classList.remove('active');
-            registerForm.classList.remove('active');
-        }, 50);
-
-        this.displayOrders();
-    }
-
-    displayOrders() {
-        const ordersList = document.getElementById('orders-list');
-        if (this.user && this.user.orders) {
-            ordersList.innerHTML = this.user.orders.map(order => `
-                <div class="order-item">
-                    <p>Order Date: ${new Date(order.date).toLocaleDateString()}</p>
-                    <p>Total: ${order.total}</p>
-                    <p>Status: ${order.status}</p>
-                </div>
-            `).join('');
+    updateAdminAccess() {
+        const adminLink = document.querySelector('.admin-link');
+        const adminSection = document.getElementById('admin');
+        
+        if (adminLink) {
+            adminLink.style.display = this.user?.isAdmin ? 'inline-block' : 'none';
+        }
+        
+        if (adminSection) {
+            adminSection.style.display = this.user?.isAdmin ? 'block' : 'none';
         }
     }
-} 
+
+    updateLoginButton() {
+        const loginBtn = document.querySelector('.login-btn');
+        if (loginBtn) {
+            loginBtn.innerHTML = this.user 
+                ? `<i class="fas fa-sign-out-alt" onclick="auth.logout()"></i>`
+                : `<i class="fas fa-user"></i>`;
+            loginBtn.onclick = this.user ? null : () => this.showLoginModal();
+        }
+    }
+
+    showLoginModal() {
+        const modal = document.getElementById('loginModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+
+    hideLoginModal() {
+        const modal = document.getElementById('loginModal');
+        if (modal) {
+            modal.classList.remove('active');
+            // Clear form
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+        }
+    }
+
+    showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+    }
+}
+
+// Initialize auth functionality
+const auth = new Auth();
+export default auth;
+
+// Expose to window for HTML event handlers
+window.auth = auth; 

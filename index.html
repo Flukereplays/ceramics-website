@@ -38,6 +38,11 @@
                 <button class="dark-mode-toggle" onclick="toggleDarkMode()">
                     <i class="fas fa-moon"></i>
                 </button>
+                <div class="auth-section">
+                    <button class="login-btn" onclick="auth.showLoginModal()">
+                        <i class="fas fa-user"></i>
+                    </button>
+                </div>
             </div>
             <nav>
                 <a href="#" data-page="about">About</a>
@@ -232,6 +237,19 @@
         <footer>
             <p>&copy; 2024 Ceramics Studio. All rights reserved.</p>
         </footer>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-form">
+            <button class="close-modal" onclick="auth.hideLoginModal()">&times;</button>
+            <h3>Admin Login</h3>
+            <form onsubmit="event.preventDefault(); auth.login(document.getElementById('email').value, document.getElementById('password').value)">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
