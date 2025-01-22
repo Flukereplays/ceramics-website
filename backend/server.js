@@ -13,9 +13,19 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB connection
+console.log('Attempting to connect to MongoDB...');
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
+    .then(() => console.log('Connected to MongoDB successfully'))
+    .catch(err => {
+        console.error('MongoDB connection error:', err);
+        console.log('MongoDB URI:', process.env.MONGODB_URI); // This will help debug connection issues
+    });
+
+// Basic error handling
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something broke!', error: err.message });
+});
 
 // Routes
 const productRoutes = require('./routes/products');
@@ -30,8 +40,14 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'Backend server is running!' });
 });
 
+// Catch-all route for undefined routes
+app.use('*', (req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log('Environment:', process.env.NODE_ENV);
 }); 
