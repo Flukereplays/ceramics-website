@@ -14,21 +14,8 @@
     
     <!-- Scripts -->
     <script type="module" src="js/main.js"></script>
-    <script type="module" src="js/navigation.js"></script>
-    <script type="module" src="js/cart.js"></script>
-    <script type="module" src="js/test-product.js"></script>
 </head>
 <body>
-    <!-- Splash Screen -->
-    <div class="splash-screen">
-        <div class="splash-content">
-            <div class="splash-logo">🏺</div>
-            <div class="loading-text">
-                Sculpting your experience<span class="loading-dots"></span>
-            </div>
-        </div>
-    </div>
-
     <!-- Main Content -->
     <div class="main-content">
         <header>
@@ -38,156 +25,52 @@
                     <h1>Artisan Ceramics</h1>
                     <span class="subtitle">Handcrafted with Passion</span>
                 </div>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+                    <i class="fas fa-moon"></i>
+                </button>
             </div>
             <nav>
-                <a href="#" onclick="navigation.showPage('about'); return false;">About</a>
-                <a href="#" onclick="navigation.showPage('gallery'); return false;">Gallery</a>
-                <div class="dropdown">
-                    <a href="#" onclick="navigation.showPage('catalogue'); return false;">Catalogue</a>
-                    <div class="dropdown-content">
-                        <a href="#" onclick="navigation.filterProducts('all'); return false;">All Products</a>
-                        <a href="#" onclick="navigation.filterProducts('vase'); return false;">Vases</a>
-                        <a href="#" onclick="navigation.filterProducts('plate'); return false;">Plates</a>
-                        <a href="#" onclick="navigation.filterProducts('mug'); return false;">Mugs</a>
-                        <a href="#" onclick="navigation.filterProducts('bowl'); return false;">Bowls</a>
-                    </div>
-                </div>
-                <a href="#" onclick="navigation.showPage('contact'); return false;">Contact</a>
+                <a href="#" data-page="about">About</a>
+                <a href="#" data-page="gallery">Gallery</a>
+                <a href="#" data-page="catalogue">Catalogue</a>
+                <a href="#" data-page="contact">Contact</a>
             </nav>
         </header>
 
-        <!-- Controls -->
-        <button class="dark-mode-toggle" onclick="toggleDarkMode()">Dark Mode</button>
-        <div class="currency-selector">
-            <select id="currency-select" onchange="changeCurrency(this.value)">
-                <option value="PLN">PLN (zł)</option>
-                <option value="EUR">EUR (€)</option>
-            </select>
-        </div>
-
-        <!-- Content Sections -->
         <main>
-            <div class="hero">
-                <div class="hero-content">
-                    <div class="hero-title">Crafting Timeless Elegance</div>
-                    <div class="hero-subtitle">Where Art Meets Function in Every Piece</div>
-                    <div class="hero-cta">
-                        <a href="#" onclick="navigation.showPage('catalogue'); return false;" class="cta-button">Explore Our Collection</a>
-                    </div>
-                </div>
-            </div>
-
-            <section id="about" class="content-section active">
+            <!-- About Section -->
+            <section id="about" class="content-section">
                 <h2>About Us</h2>
                 <p>Welcome to our Ceramics Studio, where artistry meets functionality. We create bespoke ceramic pieces that elevate your space with warmth and style. Every piece is handcrafted to perfection, combining tradition with contemporary designs.</p>
-                
-                <div class="testimonials">
-                    <h3>What Our Customers Say</h3>
-                    <div class="testimonial-grid">
-                        <div class="testimonial">
-                            <div class="quote">"The attention to detail in their work is remarkable. Each piece tells a unique story."</div>
-                            <div class="author">- Sarah Johnson</div>
-                        </div>
-                        <div class="testimonial">
-                            <div class="quote">"I absolutely love my custom-made vase. It's become the centerpiece of my living room."</div>
-                            <div class="author">- Michael Chen</div>
-                        </div>
-                        <div class="testimonial">
-                            <div class="quote">"Their ceramic pieces are not just products, they're works of art. Exceptional quality!"</div>
-                            <div class="author">- Emma Thompson</div>
-                        </div>
-                    </div>
-                </div>
             </section>
 
+            <!-- Gallery Section -->
             <section id="gallery" class="content-section">
                 <h2>Gallery</h2>
                 <div class="gallery">
-                    <!-- Replace existing img tags with these optimized versions -->
-                    <img loading="lazy" width="300" height="300" src="Website photos/Vase 02.png" alt="Elegant Vase" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Clay rock.jpg" alt="Artistic Plate" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Mug 02.png" alt="Modern Mug" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Teapot 01.png" alt="Unique Bowl" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Vase 01.png" alt="Nice Vase" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Plates 01.png" alt="Nice Plate" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Bowl 01.png" alt="Nice Bowl" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Mug 01.png" alt="Nice Mug" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/Pots.jpg" alt="Ceramic Pots" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/678eb33fa001bc560ab9ab77.jpg" alt="Ceramic Design" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/678eb315284eeb24dcc2e924.jpg" alt="Ceramic Art" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/678eb352274d101e604be7be.jpg" alt="Ceramic Work" onclick="openGalleryModal(this.src)">
-                    <img loading="lazy" width="300" height="300" src="Website photos/678eb38a3e9cb29dfa9ac55c.jpg" alt="Ceramic Piece" onclick="openGalleryModal(this.src)">
+                    <img loading="lazy" src="Website photos/Vase 01.png" alt="Ceramic Vase">
+                    <img loading="lazy" src="Website photos/Bowl 01.png" alt="Ceramic Bowl">
+                    <img loading="lazy" src="Website photos/Mug 01.png" alt="Ceramic Mug">
+                    <img loading="lazy" src="Website photos/Plates 01.png" alt="Ceramic Plates">
                 </div>
             </section>
 
+            <!-- Catalogue Section -->
             <section id="catalogue" class="content-section">
-                <h2>Catalogue</h2>
-                
-                <div class="search-container">
-                    <div class="search-bar">
-                        <input type="text" id="product-search" placeholder="Search products..." onkeyup="navigation.searchProducts(this.value)">
-                        <i class="fas fa-search search-icon"></i>
-                    </div>
-                </div>
-
-                <button class="filter-toggle" onclick="toggleFilters()">Toggle Advanced Filters</button>
-                
-                <div class="advanced-filters hidden">
-                    <div class="filter-group">
-                        <h4>Sort By</h4>
-                        <select id="sort-select" onchange="applyFilters()">
-                            <option value="default">Default</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="name-asc">Name: A to Z</option>
-                            <option value="name-desc">Name: Z to A</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <h4>Material</h4>
-                        <select id="material-select" onchange="applyFilters()">
-                            <option value="all">All Materials</option>
-                            <option value="stoneware">Stoneware</option>
-                            <option value="porcelain">Porcelain</option>
-                            <option value="terracotta">Terracotta</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <h4>Color</h4>
-                        <select id="color-select" onchange="applyFilters()">
-                            <option value="all">All Colors</option>
-                            <option value="white">White</option>
-                            <option value="blue">Blue</option>
-                            <option value="earth">Earth Tones</option>
-                            <option value="mixed">Mixed Colors</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <h4>Price Range</h4>
-                        <div class="price-range">
-                            <input type="number" id="price-min" placeholder="Min" min="0" onchange="applyFilters()">
-                            <span>to</span>
-                            <input type="number" id="price-max" placeholder="Max" min="0" onchange="applyFilters()">
-                        </div>
-                    </div>
-                </div>
-
+                <h2>Our Products</h2>
                 <div class="filter-container">
-                    <button class="filter-btn active" onclick="filterProducts('all')">All</button>
-                    <button class="filter-btn" onclick="filterProducts('vase')">Vases</button>
-                    <button class="filter-btn" onclick="filterProducts('plate')">Plates</button>
-                    <button class="filter-btn" onclick="filterProducts('mug')">Mugs</button>
-                    <button class="filter-btn" onclick="filterProducts('bowl')">Bowls</button>
+                    <button class="filter-btn active" data-category="all">All</button>
+                    <button class="filter-btn" data-category="vase">Vases</button>
+                    <button class="filter-btn" data-category="plate">Plates</button>
+                    <button class="filter-btn" data-category="mug">Mugs</button>
+                    <button class="filter-btn" data-category="bowl">Bowls</button>
                 </div>
-
-                <div class="catalogue">
-                    <!-- Products will be loaded dynamically -->
+                <div id="products" class="products-grid">
+                    <!-- Products will be loaded here dynamically -->
                 </div>
             </section>
 
+            <!-- Contact Section -->
             <section id="contact" class="content-section">
                 <h2>Contact Us</h2>
                 <div class="contact-info">
@@ -195,111 +78,12 @@
                     <p><i class="fas fa-phone"></i>+1 (555) 123-4567</p>
                     <p><i class="fas fa-envelope"></i>info@ceramicstudio.com</p>
                 </div>
-                <div class="social-links">
-                    <a href="#" class="social-link facebook">
-                        <i class="fab fa-facebook"></i>
-                        <span>Facebook</span>
-                    </a>
-                    <a href="#" class="social-link instagram">
-                        <i class="fab fa-instagram"></i>
-                        <span>Instagram</span>
-                    </a>
-                    <a href="#" class="social-link x-twitter">
-                        <i class="fab fa-x-twitter"></i>
-                        <span>X</span>
-                    </a>
-                    <a href="#" class="social-link pinterest">
-                        <i class="fab fa-pinterest"></i>
-                        <span>Pinterest</span>
-                    </a>
-                    <a href="#" class="social-link youtube">
-                        <i class="fab fa-youtube"></i>
-                        <span>YouTube</span>
-                    </a>
-                </div>
             </section>
         </main>
 
-        <!-- Panels -->
-        <div class="header-icons">
-            <div class="account-icon" onclick="toggleAccountPanel()">👤</div>
-            <div class="wishlist-icon" onclick="wishlist.togglePanel()">
-                <i class="far fa-heart"></i>
-                <span class="wishlist-count">0</span>
-            </div>
-            <div class="cart-icon" onclick="toggleCartPanel()">🛒
-                <span class="cart-count">0</span>
-            </div>
-        </div>
-
-        <div class="cart-panel">
-            <span class="panel-close" onclick="toggleCartPanel()">&times;</span>
-            <h2>Shopping Cart</h2>
-            <div class="cart-items">
-                <!-- Cart items will be dynamically added here -->
-            </div>
-            <div class="cart-total">
-                <h3>Total: $<span id="cart-total-amount">0</span></h3>
-                <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
-            </div>
-        </div>
-
-        <div class="account-panel">
-            <span class="panel-close" onclick="toggleAccountPanel()">&times;</span>
-            <div id="login-form" class="account-form">
-                <h2>Login</h2>
-                <input type="email" id="login-email" placeholder="Email">
-                <input type="password" id="login-password" placeholder="Password">
-                <button onclick="login()">Login</button>
-                <p>Don't have an account? <a href="#" onclick="showRegisterForm()">Register</a></p>
-            </div>
-
-            <div id="register-form" class="account-form" style="display: none;">
-                <h2>Register</h2>
-                <input type="text" id="register-name" placeholder="Full Name">
-                <input type="email" id="register-email" placeholder="Email">
-                <input type="password" id="register-password" placeholder="Password">
-                <button onclick="register()">Register</button>
-                <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
-            </div>
-
-            <div id="account-menu" class="account-menu">
-                <h2>My Account</h2>
-                <p>Welcome, <span id="user-name"></span></p>
-                <div class="order-history">
-                    <h3>Order History</h3>
-                    <div id="orders-list">
-                        <!-- Orders will be dynamically added here -->
-                    </div>
-                </div>
-                <button onclick="logout()">Logout</button>
-            </div>
-        </div>
-
-        <!-- Modal -->
-        <div class="modal" id="productModal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <div class="gallery-container">
-                    <button class="gallery-nav prev" onclick="previousImage()">&lt;</button>
-                    <div class="gallery-main">
-                        <img src="" alt="" id="modalMainImage">
-                    </div>
-                    <button class="gallery-nav next" onclick="nextImage()">&gt;</button>
-                </div>
-                <div class="gallery-thumbnails"></div>
-            </div>
-        </div>
-
-        <!-- Toast Container -->
-        <div class="toast-container"></div>
-
         <footer>
-            &copy; 2025 Ceramics Studio. Handcrafted with love.
+            <p>&copy; 2024 Ceramics Studio. All rights reserved.</p>
         </footer>
     </div>
-
-    <!-- Scripts -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
 </body>
 </html>

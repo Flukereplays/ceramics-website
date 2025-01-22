@@ -79,15 +79,23 @@ async function initializeApp() {
     }
 }
 
-// Dark mode toggle
+// Dark mode functionality
 function toggleDarkMode() {
-    const body = document.body;
-    body.classList.toggle('dark-mode');
+    document.body.classList.toggle('dark-mode');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDarkMode);
     
-    const button = document.querySelector('.dark-mode-toggle');
-    button.textContent = body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
-    
-    localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+    const icon = document.querySelector('.dark-mode-toggle i');
+    icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+// Initialize dark mode from localStorage
+function initializeDarkMode() {
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        document.querySelector('.dark-mode-toggle i').className = 'fas fa-sun';
+    }
 }
 
 // Event listeners
@@ -139,53 +147,91 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Function to fetch products from the API
+// DOM Elements
+const sections = document.querySelectorAll('.content-section');
+const navLinks = document.querySelectorAll('nav a');
+const filterButtons = document.querySelectorAll('.filter-btn');
+
+// Navigation
+function showPage(pageId) {
+    sections.forEach(section => {
+        section.style.display = section.id === pageId ? 'block' : 'none';
+    });
+}
+
+// Event Listeners
+navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const pageId = link.getAttribute('data-page');
+        showPage(pageId);
+    });
+});
+
+// Product filtering
+let currentProducts = [];
+
+filterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const category = button.getAttribute('data-category');
+        filterProducts(category);
+        
+        // Update active button
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+    });
+});
+
+async function filterProducts(category) {
+    if (!currentProducts.length) {
+        await fetchProducts();
+    }
+    
+    const filteredProducts = category === 'all' 
+        ? currentProducts 
+        : currentProducts.filter(product => product.category === category);
+    
+    displayProducts(filteredProducts);
+}
+
+// Fetch products from API
 async function fetchProducts() {
     try {
-        console.log('Fetching products...');
         const response = await fetch(`${config.API_URL}/api/products`);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error('Failed to fetch products');
         }
-        const data = await response.json();
-        console.log('Products fetched:', data);
-        displayProducts(data);
+        currentProducts = await response.json();
+        displayProducts(currentProducts);
     } catch (error) {
         console.error('Error fetching products:', error);
-        const productsContainer = document.getElementById('products');
-        if (productsContainer) {
-            productsContainer.innerHTML = `<p class="error-message">Error loading products. Please try again later.</p>`;
-        }
+        document.getElementById('products').innerHTML = '<p>Error loading products. Please try again later.</p>';
     }
 }
 
-// Function to display products on the page
+// Display products
 function displayProducts(products) {
-    console.log('Displaying products:', products);
     const productsContainer = document.getElementById('products');
-    if (!productsContainer) {
-        console.error('Products container not found!');
-        return;
-    }
-
-    if (!Array.isArray(products) || products.length === 0) {
-        productsContainer.innerHTML = '<p>No products available.</p>';
-        return;
-    }
+    if (!productsContainer) return;
 
     productsContainer.innerHTML = products.map(product => `
         <div class="product-card">
-            <img src="${product.imageUrl}" alt="${product.name}" onerror="this.src='images/placeholder.png'">
+            <img src="${product.imageUrl}" alt="${product.name}" loading="lazy">
             <h3>${product.name}</h3>
             <p>${product.description}</p>
             <p class="price">$${product.price.toFixed(2)}</p>
-            <button onclick="addToCart('${product._id}')">Add to Cart</button>
         </div>
     `).join('');
 }
 
-// Initialize the page
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, fetching products...');
+    // Initialize dark mode
+    initializeDarkMode();
+    
+    // Show initial page (about)
+    showPage('about');
+    
+    // Load products for catalogue
     fetchProducts();
 }); 
