@@ -8,88 +8,56 @@ import config from './config.js';
 import { Wishlist } from './wishlist.js';
 
 // Global variables
-const cart = new Cart();
-const auth = new Auth();
-const navigation = new Navigation();
-const DEBUG = true;
-const wishlist = new Wishlist();
-
-// Debug logging
-function debug(...args) {
-    if (DEBUG) {
-        console.log('[Debug]', ...args);
-    }
-}
-
-// Gallery variables
-let currentImageIndex = 0;
-let galleryImages = [];
+let cart;
+let auth;
+let navigation;
+let wishlist;
 
 // Initialize application
 async function initializeApp() {
-    debug('Starting app initialization...');
-
     try {
-        // Clear existing products from localStorage
-        localStorage.removeItem('products');
-        debug('Cleared existing products from localStorage');
-
-        // Initialize navigation first
-        debug('Initializing navigation...');
-        navigation.init();
+        // Initialize core modules
+        auth = new Auth();
+        cart = new Cart();
+        navigation = new Navigation();
+        wishlist = new Wishlist();
 
         // Initialize dark mode
-        debug('Checking dark mode preference...');
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            document.querySelector('.dark-mode-toggle').textContent = 'Light Mode';
-        }
-
-        // Initialize user session
-        debug('Checking user session...');
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-            auth.user = JSON.parse(savedUser);
-            auth.showAccountMenu();
-            cart.loadCart();
-        }
-
-        // Show main content and remove splash screen
-        debug('Transitioning from splash screen...');
-        const mainContent = document.querySelector('.main-content');
-        const splashScreen = document.querySelector('.splash-screen');
-
-        // Add visible class to main content
-        mainContent.classList.add('visible');
-
-        // Add hidden class to splash screen after a delay
-        setTimeout(() => {
-            splashScreen.classList.add('hidden');
-            
-            // Remove splash screen from DOM after transition
-            setTimeout(() => {
-                splashScreen.remove();
-                debug('Splash screen removed, initialization complete.');
-            }, 500); // Match this with the CSS transition duration
-        }, 1000);
-
+        initializeDarkMode();
+        
+        // Show initial page (about)
+        showPage('about');
+        
+        // Load products for catalogue
+        await fetchProducts();
+        
         // Initialize gallery
         initializeGallery();
-
+        
         // Update admin access
-        updateAdminAccess();
-
+        auth.updateAdminAccess();
+        
         // Add cart and wishlist icons
         addShoppingIcons();
+        
+        // Show main content and remove splash screen
+        setTimeout(() => {
+            document.querySelector('.main-content').classList.add('visible');
+            document.querySelector('.splash-screen').classList.add('hidden');
+            
+            setTimeout(() => {
+                const splashScreen = document.querySelector('.splash-screen');
+                if (splashScreen) {
+                    splashScreen.remove();
+                }
+            }, 500);
+        }, 1500);
 
     } catch (error) {
-        console.error('Error during initialization:', error);
-        const splashScreen = document.querySelector('.splash-screen');
-        if (splashScreen) {
-            const loadingText = splashScreen.querySelector('.loading-text');
-            if (loadingText) {
-                loadingText.textContent = 'Error loading the application. Please refresh the page.';
-            }
+        console.error('Initialization error:', error);
+        const loadingText = document.querySelector('.loading-text');
+        if (loadingText) {
+            loadingText.innerHTML = 'Error loading the application. <button onclick="window.location.reload()" class="retry-btn">Retry</button>';
         }
     }
 }
@@ -113,15 +81,109 @@ function initializeDarkMode() {
     }
 }
 
-// Event listeners
+// Navigation
+function showPage(pageId) {
+    const sections = document.querySelectorAll('.content-section');
+    sections.forEach(section => {
+        if (section.id === pageId) {
+            section.style.display = 'block';
+            setTimeout(() => section.classList.add('active'), 50);
+        } else {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        }
+    });
+}
+
+// Gallery functionality
+function initializeGallery() {
+    const galleryImages = Array.from(document.querySelectorAll('.gallery img'));
+    
+    const ctaButton = document.querySelector('.cta-button');
+    if (ctaButton) {
+        ctaButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPage('catalogue');
+        });
+    }
+}
+
+// Add shopping icons to header
+function addShoppingIcons() {
+    const header = document.querySelector('.header-title');
+    if (!header) return;
+
+    const iconContainer = document.createElement('div');
+    iconContainer.className = 'header-icons';
+    iconContainer.innerHTML = `
+        <div class="wishlist-icon" onclick="wishlist.togglePanel()">
+            <i class="far fa-heart"></i>
+            <span class="wishlist-count">0</span>
+        </div>
+        <div class="cart-icon" onclick="cart.togglePanel()">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+        </div>
+    `;
+    header.appendChild(iconContainer);
+}
+
+// Fetch and display products
+async function fetchProducts() {
+    try {
+        const response = await fetch(`${config.API_URL}/api/products`);
+        if (!response.ok) throw new Error('Failed to fetch products');
+        
+        const products = await response.json();
+        displayProducts(products);
+        return products;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        const productsContainer = document.getElementById('products');
+        if (productsContainer) {
+            productsContainer.innerHTML = '<p class="error-message">Error loading products. Please try again later.</p>';
+        }
+        return [];
+    }
+}
+
+// Display products
+function displayProducts(products) {
+    const productsContainer = document.getElementById('products');
+    if (!productsContainer) return;
+
+    if (!products.length) {
+        productsContainer.innerHTML = '<p class="no-products">No products found.</p>';
+        return;
+    }
+
+    productsContainer.innerHTML = products.map((product, index) => `
+        <div class="product-card" style="animation-delay: ${index * 0.1}s">
+            <img src="${product.imageUrl}" alt="${product.name}" loading="lazy" onerror="this.src='images/placeholder.png'">
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <p class="price">$${product.price.toFixed(2)}</p>
+            <button onclick="cart.addItem('${product._id}')" class="add-to-cart-btn">
+                Add to Cart
+            </button>
+            <button onclick="wishlist.toggleItem('${product._id}')" class="wishlist-btn">
+                <i class="far fa-heart"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 // Export objects and functions for use in HTML
-window.navigation = navigation;
 window.cart = cart;
 window.auth = auth;
 window.wishlist = wishlist;
+window.navigation = navigation;
 window.toggleDarkMode = toggleDarkMode;
+window.showPage = showPage;
+window.fetchProducts = fetchProducts;
 
 // Export additional functions needed by the HTML
 window.toggleAccountPanel = () => auth.toggleAccountPanel();
@@ -167,19 +229,6 @@ const sections = document.querySelectorAll('.content-section');
 const navLinks = document.querySelectorAll('nav a');
 const filterButtons = document.querySelectorAll('.filter-btn');
 
-// Navigation
-function showPage(pageId) {
-    sections.forEach(section => {
-        if (section.id === pageId) {
-            section.style.display = 'block';
-            setTimeout(() => section.classList.add('active'), 50);
-        } else {
-            section.classList.remove('active');
-            section.style.display = 'none';
-        }
-    });
-}
-
 // Event Listeners
 navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
@@ -188,16 +237,6 @@ navLinks.forEach(link => {
         showPage(pageId);
     });
 });
-
-// Gallery functionality
-function initializeGallery() {
-    galleryImages = Array.from(document.querySelectorAll('.gallery img'));
-    
-    document.querySelector('.cta-button').addEventListener('click', (e) => {
-        e.preventDefault();
-        showPage('catalogue');
-    });
-}
 
 function openGalleryModal(img) {
     const modal = document.getElementById('galleryModal');
@@ -268,78 +307,4 @@ async function filterProducts(category) {
         : currentProducts.filter(product => product.category === category);
     
     displayProducts(filteredProducts);
-}
-
-// Fetch products from API
-async function fetchProducts() {
-    try {
-        const response = await fetch(`${config.API_URL}/api/products`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch products');
-        }
-        currentProducts = await response.json();
-        displayProducts(currentProducts);
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        document.getElementById('products').innerHTML = '<p class="error-message">Error loading products. Please try again later.</p>';
-    }
-}
-
-// Display products
-function displayProducts(products) {
-    const productsContainer = document.getElementById('products');
-    if (!productsContainer) return;
-
-    if (!products.length) {
-        productsContainer.innerHTML = '<p class="no-products">No products found.</p>';
-        return;
-    }
-
-    productsContainer.innerHTML = products.map((product, index) => `
-        <div class="product-card" style="animation-delay: ${index * 0.1}s">
-            <img src="${product.imageUrl}" alt="${product.name}" loading="lazy" onerror="this.src='images/placeholder.png'">
-            <h3>${product.name}</h3>
-            <p>${product.description}</p>
-            <p class="price">$${product.price.toFixed(2)}</p>
-        </div>
-    `).join('');
-}
-
-// Check admin access and show/hide admin link
-function updateAdminAccess() {
-    const adminLink = document.querySelector('.admin-link');
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
-    if (adminLink) {
-        adminLink.style.display = currentUser.isAdmin ? 'inline-block' : 'none';
-    }
-}
-
-function addShoppingIcons() {
-    const header = document.querySelector('.header-title');
-    const iconContainer = document.createElement('div');
-    iconContainer.className = 'header-icons';
-    iconContainer.innerHTML = `
-        <div class="wishlist-icon" onclick="wishlist.togglePanel()">
-            <i class="far fa-heart"></i>
-            <span class="wishlist-count">0</span>
-        </div>
-        <div class="cart-icon" onclick="cart.togglePanel()">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="cart-count">0</span>
-        </div>
-    `;
-    header.appendChild(iconContainer);
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize dark mode
-    initializeDarkMode();
-    
-    // Show initial page (about)
-    showPage('about');
-    
-    // Load products for catalogue
-    fetchProducts();
-}); 
+} 
