@@ -19,6 +19,10 @@ function debug(...args) {
     }
 }
 
+// Gallery variables
+let currentImageIndex = 0;
+let galleryImages = [];
+
 // Initialize application
 async function initializeApp() {
     debug('Starting app initialization...');
@@ -66,6 +70,9 @@ async function initializeApp() {
                 debug('Splash screen removed, initialization complete.');
             }, 500); // Match this with the CSS transition duration
         }, 1000);
+
+        // Initialize gallery
+        initializeGallery();
 
     } catch (error) {
         console.error('Error during initialization:', error);
@@ -155,7 +162,13 @@ const filterButtons = document.querySelectorAll('.filter-btn');
 // Navigation
 function showPage(pageId) {
     sections.forEach(section => {
-        section.style.display = section.id === pageId ? 'block' : 'none';
+        if (section.id === pageId) {
+            section.style.display = 'block';
+            setTimeout(() => section.classList.add('active'), 50);
+        } else {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        }
     });
 }
 
@@ -167,6 +180,48 @@ navLinks.forEach(link => {
         showPage(pageId);
     });
 });
+
+// Gallery functionality
+function initializeGallery() {
+    galleryImages = Array.from(document.querySelectorAll('.gallery img'));
+    
+    document.querySelector('.cta-button').addEventListener('click', (e) => {
+        e.preventDefault();
+        showPage('catalogue');
+    });
+}
+
+function openGalleryModal(img) {
+    const modal = document.getElementById('galleryModal');
+    const modalImg = document.getElementById('modalMainImage');
+    
+    currentImageIndex = galleryImages.indexOf(img);
+    modalImg.src = img.src;
+    modalImg.alt = img.alt;
+    
+    modal.classList.add('active');
+}
+
+function closeGalleryModal() {
+    document.getElementById('galleryModal').classList.remove('active');
+}
+
+function previousImage() {
+    currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+    updateModalImage();
+}
+
+function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+    updateModalImage();
+}
+
+function updateModalImage() {
+    const modalImg = document.getElementById('modalMainImage');
+    const currentImg = galleryImages[currentImageIndex];
+    modalImg.src = currentImg.src;
+    modalImg.alt = currentImg.alt;
+}
 
 // Product filtering
 let currentProducts = [];
@@ -181,6 +236,19 @@ filterButtons.forEach(button => {
         button.classList.add('active');
     });
 });
+
+// Product search
+const searchInput = document.getElementById('product-search');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredProducts = currentProducts.filter(product => 
+            product.name.toLowerCase().includes(searchTerm) ||
+            product.description.toLowerCase().includes(searchTerm)
+        );
+        displayProducts(filteredProducts);
+    });
+}
 
 async function filterProducts(category) {
     if (!currentProducts.length) {
@@ -205,7 +273,7 @@ async function fetchProducts() {
         displayProducts(currentProducts);
     } catch (error) {
         console.error('Error fetching products:', error);
-        document.getElementById('products').innerHTML = '<p>Error loading products. Please try again later.</p>';
+        document.getElementById('products').innerHTML = '<p class="error-message">Error loading products. Please try again later.</p>';
     }
 }
 
@@ -214,9 +282,14 @@ function displayProducts(products) {
     const productsContainer = document.getElementById('products');
     if (!productsContainer) return;
 
-    productsContainer.innerHTML = products.map(product => `
-        <div class="product-card">
-            <img src="${product.imageUrl}" alt="${product.name}" loading="lazy">
+    if (!products.length) {
+        productsContainer.innerHTML = '<p class="no-products">No products found.</p>';
+        return;
+    }
+
+    productsContainer.innerHTML = products.map((product, index) => `
+        <div class="product-card" style="animation-delay: ${index * 0.1}s">
+            <img src="${product.imageUrl}" alt="${product.name}" loading="lazy" onerror="this.src='images/placeholder.png'">
             <h3>${product.name}</h3>
             <p>${product.description}</p>
             <p class="price">$${product.price.toFixed(2)}</p>

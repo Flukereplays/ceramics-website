@@ -16,6 +16,16 @@
     <script type="module" src="js/main.js"></script>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">🏺</div>
+            <div class="loading-text">
+                Sculpting your experience<span class="loading-dots"></span>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div class="main-content">
         <header>
@@ -38,26 +48,66 @@
         </header>
 
         <main>
+            <!-- Hero Section -->
+            <div class="hero">
+                <div class="hero-content">
+                    <div class="hero-title">Crafting Timeless Elegance</div>
+                    <div class="hero-subtitle">Where Art Meets Function in Every Piece</div>
+                    <div class="hero-cta">
+                        <a href="#" class="cta-button" data-page="catalogue">Explore Our Collection</a>
+                    </div>
+                </div>
+            </div>
+
             <!-- About Section -->
             <section id="about" class="content-section">
                 <h2>About Us</h2>
                 <p>Welcome to our Ceramics Studio, where artistry meets functionality. We create bespoke ceramic pieces that elevate your space with warmth and style. Every piece is handcrafted to perfection, combining tradition with contemporary designs.</p>
+                
+                <div class="testimonials">
+                    <h3>What Our Customers Say</h3>
+                    <div class="testimonial-grid">
+                        <div class="testimonial">
+                            <div class="quote">"The attention to detail in their work is remarkable. Each piece tells a unique story."</div>
+                            <div class="author">- Sarah Johnson</div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="quote">"I absolutely love my custom-made vase. It's become the centerpiece of my living room."</div>
+                            <div class="author">- Michael Chen</div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="quote">"Their ceramic pieces are not just products, they're works of art. Exceptional quality!"</div>
+                            <div class="author">- Emma Thompson</div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Gallery Section -->
             <section id="gallery" class="content-section">
                 <h2>Gallery</h2>
                 <div class="gallery">
-                    <img loading="lazy" src="Website photos/Vase 01.png" alt="Ceramic Vase">
-                    <img loading="lazy" src="Website photos/Bowl 01.png" alt="Ceramic Bowl">
-                    <img loading="lazy" src="Website photos/Mug 01.png" alt="Ceramic Mug">
-                    <img loading="lazy" src="Website photos/Plates 01.png" alt="Ceramic Plates">
+                    <img loading="lazy" src="Website photos/Vase 02.png" alt="Elegant Vase" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Clay rock.jpg" alt="Artistic Plate" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Mug 02.png" alt="Modern Mug" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Teapot 01.png" alt="Unique Bowl" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Vase 01.png" alt="Nice Vase" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Plates 01.png" alt="Nice Plate" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Bowl 01.png" alt="Nice Bowl" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Mug 01.png" alt="Nice Mug" onclick="openGalleryModal(this)">
+                    <img loading="lazy" src="Website photos/Pots.jpg" alt="Ceramic Pots" onclick="openGalleryModal(this)">
                 </div>
             </section>
 
             <!-- Catalogue Section -->
             <section id="catalogue" class="content-section">
                 <h2>Our Products</h2>
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" id="product-search" placeholder="Search products...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
                 <div class="filter-container">
                     <button class="filter-btn active" data-category="all">All</button>
                     <button class="filter-btn" data-category="vase">Vases</button>
@@ -78,8 +128,40 @@
                     <p><i class="fas fa-phone"></i>+1 (555) 123-4567</p>
                     <p><i class="fas fa-envelope"></i>info@ceramicstudio.com</p>
                 </div>
+                <div class="social-links">
+                    <a href="#" class="social-link facebook">
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="#" class="social-link instagram">
+                        <i class="fab fa-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                    <a href="#" class="social-link x-twitter">
+                        <i class="fab fa-x-twitter"></i>
+                        <span>X</span>
+                    </a>
+                    <a href="#" class="social-link pinterest">
+                        <i class="fab fa-pinterest"></i>
+                        <span>Pinterest</span>
+                    </a>
+                </div>
             </section>
         </main>
+
+        <!-- Gallery Modal -->
+        <div class="modal" id="galleryModal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeGalleryModal()">&times;</span>
+                <div class="gallery-container">
+                    <button class="gallery-nav prev" onclick="previousImage()">&lt;</button>
+                    <div class="gallery-main">
+                        <img src="" alt="" id="modalMainImage">
+                    </div>
+                    <button class="gallery-nav next" onclick="nextImage()">&gt;</button>
+                </div>
+            </div>
+        </div>
 
         <footer>
             <p>&copy; 2024 Ceramics Studio. All rights reserved.</p>
